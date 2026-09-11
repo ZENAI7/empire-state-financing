@@ -13,11 +13,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          from urllib.parse import quote
           p=Path('index.html')
           s=p.read_text()
-          s=s.replace('<p style="margin-top:18px;font-weight:800;letter-spacing:.03em">Developed by PROMOS1. WA 718 350 5194</p>','<p style="margin-top:18px;font-weight:800;letter-spacing:.03em"><a data-t="developerCredit" href="https://wa.me/17183505194" target="_blank" rel="noopener" onclick="event.stopPropagation()">Developed by PROMOS1 · WhatsApp 718 350 5194</a></p>')
-          s=s.replace("saved:'✓ Your initial funding request has been saved on this device.'},es:{", "saved:'✓ Your initial funding request has been saved on this device.',developerCredit:'Developed by PROMOS1 · WhatsApp 718 350 5194'},es:{")
-          s=s.replace("saved:'✓ Tu solicitud inicial de financiamiento se guardó en este dispositivo.'}};", "saved:'✓ Tu solicitud inicial de financiamiento se guardó en este dispositivo.',developerCredit:'Desarrollado por PROMOS1 · WhatsApp 718 350 5194'}};")
+          msg='Hola PROMOS1. Estoy interesado en desarrollar una aplicación o website similar. Favor de contactarme para recibir más información. Gracias.'
+          wa='https://wa.me/17183505194?text='+quote(msg, safe='')
+          old='href="https://wa.me/17183505194"'
+          s=s.replace(old, f'href="{wa}" data-whatsapp="promos1"')
+          s=s.replace("if(!href||href.startsWith('#')||href.startsWith('mailto:')||href.startsWith('tel:'))return;", "if(!href||href.startsWith('#')||href.startsWith('mailto:')||href.startsWith('tel:')||a.dataset.whatsapp==='promos1'||href.includes('wa.me/'))return;")
           p.write_text(s)
           PY
       - name: Commit update
@@ -26,5 +29,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Make PROMOS1 WhatsApp footer bilingual"
+          git commit -m "Fix PROMOS1 WhatsApp contact message"
           git push
