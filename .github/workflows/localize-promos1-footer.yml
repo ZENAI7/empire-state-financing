@@ -9,18 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Update bilingual footer and WhatsApp link
+      - name: Make PROMOS1 WhatsApp message follow EN/ES
         run: |
           python - <<'PY'
           from pathlib import Path
-          from urllib.parse import quote
+          import re
           p=Path('index.html')
           s=p.read_text()
-          msg='Hola PROMOS1. Estoy interesado en desarrollar una aplicación o website similar. Favor de contactarme para recibir más información. Gracias.'
-          wa='https://wa.me/17183505194?text='+quote(msg, safe='')
-          old='href="https://wa.me/17183505194"'
-          s=s.replace(old, f'href="{wa}" data-whatsapp="promos1"')
-          s=s.replace("if(!href||href.startsWith('#')||href.startsWith('mailto:')||href.startsWith('tel:'))return;", "if(!href||href.startsWith('#')||href.startsWith('mailto:')||href.startsWith('tel:')||a.dataset.whatsapp==='promos1'||href.includes('wa.me/'))return;")
+          s=re.sub(r'href="https://wa\.me/17183505194(?:\?text=[^"]*)?" data-whatsapp="promos1"', 'href="https://wa.me/17183505194" data-whatsapp="promos1"', s)
+          marker='data-promos-wa-language'
+          if marker not in s:
+              script='''<script data-promos-wa-language>(()=>{const link=document.querySelector('a[data-whatsapp="promos1"]');if(!link)return;const en='Hello PROMOS1. I’m interested in developing a similar app or website. Please contact me with more information. Thank you.';const es='Hola PROMOS1. Estoy interesado en desarrollar una aplicación o website similar. Favor de contactarme para recibir más información. Gracias.';function updatePromosWA(){link.href='https://wa.me/17183505194?text='+encodeURIComponent(lang==='es'?es:en)}const originalSetLanguage=setLanguage;setLanguage=function(l){originalSetLanguage(l);updatePromosWA()};updatePromosWA()})();</script>'''
+              s=s.replace('</body>',script+'</body>')
           p.write_text(s)
           PY
       - name: Commit update
@@ -29,5 +29,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Fix PROMOS1 WhatsApp contact message"
+          git commit -m "Use English or Spanish PROMOS1 WhatsApp message"
           git push
