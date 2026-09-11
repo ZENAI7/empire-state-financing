@@ -1,0 +1,30 @@
+name: Localize PROMOS1 footer
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  update-footer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update bilingual footer and WhatsApp link
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('<p style="margin-top:18px;font-weight:800;letter-spacing:.03em">Developed by PROMOS1. WA 718 350 5194</p>','<p style="margin-top:18px;font-weight:800;letter-spacing:.03em"><a data-t="developerCredit" href="https://wa.me/17183505194" target="_blank" rel="noopener" onclick="event.stopPropagation()">Developed by PROMOS1 · WhatsApp 718 350 5194</a></p>')
+          s=s.replace("saved:'✓ Your initial funding request has been saved on this device.'},es:{", "saved:'✓ Your initial funding request has been saved on this device.',developerCredit:'Developed by PROMOS1 · WhatsApp 718 350 5194'},es:{")
+          s=s.replace("saved:'✓ Tu solicitud inicial de financiamiento se guardó en este dispositivo.'}};", "saved:'✓ Tu solicitud inicial de financiamiento se guardó en este dispositivo.',developerCredit:'Desarrollado por PROMOS1 · WhatsApp 718 350 5194'}};")
+          p.write_text(s)
+          PY
+      - name: Commit update
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Make PROMOS1 WhatsApp footer bilingual"
+          git push
