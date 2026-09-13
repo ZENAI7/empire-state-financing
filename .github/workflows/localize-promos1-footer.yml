@@ -1,21 +1,27 @@
-name: Localize PROMOS1 footer
+name: Localize PROMOS1 footer and language buttons
 on:
   push:
     branches: [main]
 permissions:
   contents: write
 jobs:
-  update-footer:
+  update-language-ui:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Make PROMOS1 WhatsApp message follow EN/ES
+      - name: Keep PROMOS1 WhatsApp localized and show full language names
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p=Path('index.html')
           s=p.read_text()
+
+          # Make the two language controls explicit and user-friendly.
+          s=s.replace('<button id="langEN" class="active" type="button">EN</button>', '<button id="langEN" class="active" type="button" aria-label="Switch to English">English</button>')
+          s=s.replace('<button id="langES" type="button">ES</button>', '<button id="langES" type="button" aria-label="Cambiar a Español">Español</button>')
+
+          # Keep the PROMOS1 WhatsApp message synchronized with the selected language.
           s=re.sub(r'href="https://wa\.me/17183505194(?:\?text=[^"]*)?" data-whatsapp="promos1"', 'href="https://wa.me/17183505194" data-whatsapp="promos1"', s)
           marker='data-promos-wa-language'
           if marker not in s:
@@ -29,5 +35,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Use English or Spanish PROMOS1 WhatsApp message"
+          git commit -m "Show English and Español language buttons"
           git push
